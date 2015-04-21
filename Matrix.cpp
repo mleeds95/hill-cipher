@@ -11,12 +11,29 @@
 #include <stdexcept>
 #include <cmath>
 
-// This constructor just allocates space for the matrix.
-Matrix::Matrix(int size) {
+// This constructor allocates space for the matrix.
+// If identity is true, construct the identity matrix.
+Matrix::Matrix(int size, bool identity) {
     this->_size = size;
     this->_matrix = new int*[this->_size];
-    for (int i = 0; i < this->_size; i++) {
+    for (int i = 0; i < this->_size; ++i) {
         this->_matrix[i] = new int[this->_size];
+        if (identity) {
+            for (int j = 0; j < this->_size; ++j)
+                this->_matrix[i][j] = (i == j ? 1 : 0);
+        }
+    }
+}
+
+// copy constructor
+Matrix::Matrix(const Matrix& other) {
+    this->_size = other._size;
+    this->_matrix = new int*[this->_size];
+    for (int i = 0; i < this->_size; ++i) {
+        this->_matrix[i] = new int[this->_size];
+        for (int j = 0; j < this->_size; ++j) {
+            this->_matrix[i][j] = other._matrix[i][j];
+        }
     }
 }
 
@@ -51,6 +68,45 @@ Matrix::~Matrix() {
         delete []this->_matrix[i];
     }
     delete []this->_matrix;
+}
+
+// Find the inverse of this using Gauss-Jordan elimination, and return a pointer to it.
+Matrix* Matrix::findGaussJordanInverse() {
+    Matrix* copy = this;
+    int n = this->_size;
+    Matrix* inv = new Matrix(n, true);
+    int alpha;
+    int diag;
+    for (int i = 0; i < n; ++i) {
+        diag = copy->_matrix[i][i];
+        for (int j = 0; j < n; ++j) {
+            copy->_matrix[i][j] /= diag;
+            inv->_matrix[i][j] /= diag; 
+        }
+        for (int j = 0; j < n; ++j) {
+            if (i == j) continue;
+            alpha = copy->_matrix[j][i] / copy->_matrix[i][i];
+            for (int k = 0; k < n; ++k) {
+                copy->_matrix[j][k] -= alpha * copy->_matrix[i][k];
+                inv->_matrix[j][k] -= alpha * inv->_matrix[i][k];
+            }
+        }
+    }
+    return inv;
+}
+
+// Multiplies this matrix by the n by 1 matrix given, mod 29
+int* Matrix::multiplyMod29(int* arr) {
+    int n = this->_size;
+    int* result = new int[n];
+    for (int i = 0; i < n; ++i) {
+        result[i] = 0;
+        for (int j = 0; j < n; ++j) {
+            result[i] += this->_matrix[i][j] * arr[j];
+        }
+        result[i] = result[i] % 29;
+    }
+    return result;
 }
 
 // Find the maximum magnitude value in the matrix. This can be useful for 
@@ -90,7 +146,7 @@ ostream& operator<<(ostream& os, const Matrix& m) {
 // by adding their respective elements.
 Matrix* operator+(const Matrix& m1, const Matrix& m2) {
     int n = m1._size;
-    Matrix* pSumMatrix = new Matrix(n);
+    Matrix* pSumMatrix = new Matrix(n, false);
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
             pSumMatrix->_matrix[i][j] = (m1._matrix[i][j] + m2._matrix[i][j]);
@@ -102,7 +158,7 @@ Matrix* operator+(const Matrix& m1, const Matrix& m2) {
 // This overloads the subtraction operator for (square) matrices.
 Matrix* operator-(const Matrix& m1, const Matrix& m2) {
     int n = m1._size;
-    Matrix* pDifferenceMatrix = new Matrix(n);
+    Matrix* pDifferenceMatrix = new Matrix(n, false);
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
             pDifferenceMatrix->_matrix[i][j] = (m1._matrix[i][j] - m2._matrix[i][j]);
@@ -111,47 +167,3 @@ Matrix* operator-(const Matrix& m1, const Matrix& m2) {
     return pDifferenceMatrix; 
 }
 
-// This takes four indices, assumes they refer to two square submatrices
-// with the same dimensions and adds them, returning the result.
-// N is the size of each submatrix. subtract enables subtraction instead.
-Matrix* Matrix::addSquareSubmatrices(bool subtract, int n, int rowStart,  int colStart, 
-                                                           int rowStart2, int colStart2) const {
-    Matrix* pSumMatrix = new Matrix(n);
-    int i, j, k, l;
-    k = rowStart2;
-    for (i = rowStart; i < rowStart + n; i++) {
-        l = colStart2;
-        for (j = colStart; j < colStart + n; j++) {
-            if (subtract)
-                pSumMatrix->_matrix[i-rowStart][j-colStart] = this->_matrix[i][j] - this->_matrix[k][l];
-            else
-                pSumMatrix->_matrix[i-rowStart][j-colStart] = this->_matrix[i][j] + this->_matrix[k][l];
-            l++;
-        }
-        k++;
-    }
-    return pSumMatrix;
-}
-
-// This takes two pointers to matrices and adds or subtracts NxN numbers
-// from them, putting the result into 'this' starting at (row, col).
-// If append is true, it adds the sums to the current values.
-void Matrix::addExternalMatrices(Matrix* pM1, bool subtract, Matrix* pM2, bool append, int n, int row, int col) {
-    int i, j;
-    for (i = 0; i < n; i++) {
-        for (j = 0; j < n; j++) {
-            if (append) {
-                if (subtract)
-                    this->_matrix[i+row][j+col] += pM1->_matrix[i][j] - pM2->_matrix[i][j];
-                else
-                    this->_matrix[i+row][j+col] += pM1->_matrix[i][j] + pM2->_matrix[i][j];
-            } else {
-                if (subtract)
-                    this->_matrix[i+row][j+col] = pM1->_matrix[i][j] - pM2->_matrix[i][j];
-                else
-                    this->_matrix[i+row][j+col] = pM1->_matrix[i][j] + pM2->_matrix[i][j];
-            }
-        }
-    }
-    return;
-}

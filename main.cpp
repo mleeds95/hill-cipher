@@ -40,25 +40,30 @@ int main(int argc, char* argv[]) {
         cerr << "Error: File '" << filename << "' not found or inaccessible.\n";
         return 2;
     }
-    int n; // matrix is n by n
-    Matrix* keyMatrix;
     // Assume the data file is formatted correctly.
     string line1;
     inFile >> line1;
-    n = atoi(line1.substr(2).c_str());
-    keyMatrix = new Matrix(inFile, n);
+    int n = atoi(line1.substr(2).c_str()); // it's an n by n matrix
+    Matrix* keyMatrix = new Matrix(inFile, n);
     inFile.close();
     // At this point, keyMatrix should be initialized.
     cout << *keyMatrix << endl;
-    const int arr[] = {7,4,11,11,14,28};
-    mapIntegersToCharacters(arr, 6);
-    tuple<int*,int> myT = mapCharactersToIntegers();
-    int size = get<1>(myT);
-    int* arr2 = get<0>(myT);
-    for (int i = 0; i < size; ++i) {
-        cout << arr2[i] << endl;
-    }
+    //Matrix* inv = keyMatrix->findGaussJordanInverse();
+    //cout << *inv << endl;
+    //const int arr[] = {7,4,11,11,14,28};
+    //mapIntegersToCharacters(arr, 6);
     //TODO encrypt/decrypt
+    if (ENCRYPT) {
+        tuple<int*,int> input = mapCharactersToIntegers();
+        int size = get<1>(input);
+        int* arr = get<0>(input);
+        int* encrypted = keyMatrix->multiplyMod29(arr);
+        for (int i = 0; i < n; ++i) {
+            cout << encrypted[i] << endl;
+        }
+        delete arr;
+        delete encrypted;
+    }
     delete keyMatrix;
     return 0;
 }
@@ -73,12 +78,12 @@ void mapIntegersToCharacters(const int* arr, int size) {
     }
 }
 
-tuple<int*, int> mapCharactersToIntegers() {
+tuple<int*, int> mapCharactersToIntegers(int n) {
     string inText;
     cin >> inText;
     int size = inText.length();
     int* arr = new int[size];
-    for (unsigned int i = 0; i < size; ++i) {
+    for (int i = 0; i < size; ++i) {
         char c = inText.at(i);
         if (c >= 'A' && c <= 'Z') arr[i] = ((int) c) - 65;
         else if (c == '.') arr[i] = 26;
