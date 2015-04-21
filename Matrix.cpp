@@ -1,9 +1,8 @@
-// File: matrix.cpp
+// File: Matrix.cpp
 // Author: Matthew Leeds
-// Last Edit: 2015-01-24
 // This class defines a matrix that can be used for multiplication/addition/subtraction.
 
-#include "matrix.h"
+#include "Matrix.h"
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -19,26 +18,6 @@ Matrix::Matrix(int size) {
     for (int i = 0; i < this->_size; i++) {
         this->_matrix[i] = new int[this->_size];
     }
-    this->_numMultiplications = 0;
-    this->_numAdditions = 0;
-}
-
-// This constructor allocates space and fills the matrix with random values.
-Matrix::Matrix(int size, unsigned int seed) {
-    this->_size = size;
-    this->_matrix = new int*[this->_size];
-    for (int i = 0; i < this->_size; i++) {
-        this->_matrix[i] = new int[this->_size];
-    }
-    // Fill array with random values 0-9
-    srand(seed);
-    for (int i = 0; i < this->_size; i++) {
-        for (int j = 0; j < this->_size; j++) {
-            this->_matrix[i][j] = rand() % 10;
-        }
-    }
-    this->_numMultiplications = 0;
-    this->_numAdditions = 0;
 }
 
 // This constructor allocates space and fills the matrix with values from a file.
@@ -65,8 +44,6 @@ Matrix::Matrix(ifstream& inFile, int size) {
             }
         }
     }
-    this->_numMultiplications = 0;
-    this->_numAdditions = 0;
 }
 
 Matrix::~Matrix() {
@@ -177,10 +154,4 @@ void Matrix::addExternalMatrices(Matrix* pM1, bool subtract, Matrix* pM2, bool a
         }
     }
     return;
-}
-
-// This adds the multiplication and addition counts from the given matrix.
-void Matrix::addOperationCounts(Matrix* pM) {
-    this->_numMultiplications += pM->_numMultiplications;
-    this->_numAdditions += pM->_numAdditions;
 }

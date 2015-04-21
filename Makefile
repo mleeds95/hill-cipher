@@ -1,22 +1,20 @@
 # File: Makefile
 # Author: Matthew Leeds
-# Last Edit: 2015-01-20
 
 CC=g++
-CFLAGS=
-OBJ=main.o matrix.o strassenMultiply.o
+CFLAGS=-g -Wall -std=c++11
+OBJ=main.o Matrix.o
 
-project1: $(OBJ)
-	$(CC) $(CFLAGS) -o project1 $(OBJ)
+.PHONY: clean
 
-main.o: main.cpp strassenMultiply.cpp
+hillcipher: $(OBJ)
+	$(CC) $(CFLAGS) -o hillcipher $(OBJ)
+
+main.o: main.cpp
 	$(CC) $(CFLAGS) -c main.cpp
 
-matrix.o: matrix.cpp
-	$(CC) $(CFLAGS) -c matrix.cpp
-
-strassenMultiply.o: strassenMultiply.cpp matrix.cpp
-	$(CC) $(CFLAGS) -c strassenMultiply.cpp
+Matrix.o: Matrix.cpp
+	$(CC) $(CFLAGS) -c Matrix.cpp
 
 clean:
-	rm project1 *.o
+	-rm hillcipher *.o
