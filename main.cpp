@@ -10,6 +10,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <string>
+#include <cmath>
 #include <fstream>
 #include <tuple>
 #include "Matrix.h"
@@ -19,6 +20,8 @@ using namespace std;
 // These functions convert "0-28" to "A-Z,. " and vice versa.
 void mapIntegersToCharacters(const int* arr, int size);
 tuple<int**, int> mapCharactersToIntegers(int n);
+// finds the modular multiplicative inverse
+int findModMultInv(int num, int mod);
 
 int main(int argc, char* argv[]) {
     if (argc != 3) {
@@ -58,27 +61,53 @@ int main(int argc, char* argv[]) {
     }
     // Attempt encryption or decryption
     if (ENCRYPT) { // encrypt stdin -> stdout
+        // read a line from stdin
         tuple<int**, int> input = mapCharactersToIntegers(n);
         // m is the number of n-length substrings the input text was broken into
         int m = get<1>(input); 
         int** plaintext = get<0>(input);
-        int** encrypted = new int*[m];
+        int** ciphertext = new int*[m];
         for (int i = 0; i < m; ++i) {
             // encrypt each by multiplying by the key matrix
-            encrypted[i] = keyMatrix->multiplyMod29(plaintext[i]);
+            ciphertext[i] = keyMatrix->modMultiplyVector(plaintext[i], 29);
             // write the result to stdout as characters
-            mapIntegersToCharacters(encrypted[i], n);
+            mapIntegersToCharacters(ciphertext[i], n);
         }
         cout << endl;
         for (int i = 0; i < m; ++i)
-            delete[] encrypted[i];
-        delete encrypted;
+            delete[] ciphertext[i];
+        delete ciphertext;
         for (int i = 0; i < m; ++i)
             delete[] plaintext[i];
         delete plaintext;
     } else { // decrypt stdin -> stdout
+        // read a line from stdin
+        tuple<int**, int> input = mapCharactersToIntegers(n);
+        // m is the number of n-length substrings the input text was broken into
+        int m = get<1>(input); 
+        int** ciphertext = get<0>(input);
+        int** plaintext = new int*[m];
+        // find the adjoint of the key matrix
         Matrix* adj = keyMatrix->findAdjoint();
-        //TODO
+        // find the multiplicative inverse of the determinant mod 29
+        int detInv = findModMultInv(det, 29);
+        // multiply the adjoint by this value
+        adj->modMultiplyScalar(detInv, 29);
+        // We now have the inverse mod 29
+        Matrix* inv = adj;
+        for (int i = 0; i < m; ++i) {
+            // Multiply each substring by the ciphertext to decrypt.
+            plaintext[i] = inv->modMultiplyVector(ciphertext[i], 29);
+            // write the result to stdout as characters
+            mapIntegersToCharacters(plaintext[i], n);
+        }
+        cout << endl;
+        for (int i = 0; i < m; ++i)
+            delete[] ciphertext[i];
+        delete ciphertext;
+        for (int i = 0; i < m; ++i)
+            delete[] plaintext[i];
+        delete plaintext;
     }
     delete keyMatrix;
     return 0;
@@ -120,4 +149,26 @@ tuple<int**, int> mapCharactersToIntegers(int n) {
     }
     tuple<int**, int> returnVal(arr, m);
     return returnVal;
+}
+
+// finds x such that (num * x) % mod = 1
+// Guaranteed te work with prime moduli such as 29
+// This uses the Extended Euclidean algorithm.
+int findModMultInv(int num, int mod) {
+    int b0 = mod;
+    int t, q;
+    int x0 = 0;
+    int x1 = 1;
+    if (mod == 1) return 1;
+    while (num > 1) {
+        q = num / mod;
+        t = mod;
+        mod = num % mod;
+        num = t;
+        t = x0;
+        x0 = x1 - q * x0;
+        x1 = t;
+    }
+    if (x1 < 0) x1 += b0;
+    return x1;
 }

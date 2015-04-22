@@ -15,7 +15,8 @@ class Matrix {
         int findDeterminant();
         Matrix* getSubmatrix(int i, int j);
         Matrix* findAdjoint();
-        int* multiplyMod29(int* arr);
+        int* modMultiplyVector(int* arr, int mod);
+        void modMultiplyScalar(int val, int mod);
         int findMaxMagnitude() const;
         friend ostream& operator<<(ostream& os, const Matrix& m);
         friend Matrix* operator+(const Matrix& m1, const Matrix& m2);

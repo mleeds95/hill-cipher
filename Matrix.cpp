@@ -136,8 +136,9 @@ Matrix* Matrix::findAdjoint() {
     return adj;
 }
 
-// Multiplies this matrix by the n by 1 matrix given, mod 29
-int* Matrix::multiplyMod29(int* arr) {
+// Multiplies this matrix by the n by 1 matrix given, with the mod given
+// and returns the newly allocated result
+int* Matrix::modMultiplyVector(int* arr, int mod) {
     int n = this->_size;
     int* result = new int[n];
     for (int i = 0; i < n; ++i) {
@@ -145,9 +146,22 @@ int* Matrix::multiplyMod29(int* arr) {
         for (int j = 0; j < n; ++j) {
             result[i] += this->_matrix[i][j] * arr[j];
         }
-        result[i] = result[i] % 29;
+        result[i] %= mod;
     }
     return result;
+}
+
+// multiplies this matrix in place by the scalar given, with a modulo 
+void Matrix::modMultiplyScalar(int val, int mod) {
+    for (int i = 0; i < this->_size; ++i) {
+        for (int j = 0; j < this->_size; ++j) {
+            this->_matrix[i][j] *= val;
+            this->_matrix[i][j] %= mod;
+            // % is division remainder not modulo
+            if (this->_matrix[i][j] < 0)
+                this->_matrix[i][j] += mod;
+        }
+    }
 }
 
 // Find the maximum magnitude value in the matrix. This can be useful for 
