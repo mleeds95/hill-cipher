@@ -138,7 +138,7 @@ tuple<int**, int> mapCharactersToIntegers(int n) {
         if ((i+1) % n == 0) break;
         input[i] = ' ';
     }
-    int m = i / n;
+    int m = (i+1) / n;
     // allocate an array for the m substrings of length n
     int** arr = new int*[m];
     // iterate over the substrings, writing appropriate integers to arr
