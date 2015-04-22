@@ -147,6 +147,7 @@ int* Matrix::modMultiplyVector(int* arr, int mod) {
             result[i] += this->_matrix[i][j] * arr[j];
         }
         result[i] %= mod;
+        if (result[i] < 0) result[i] += mod;
     }
     return result;
 }

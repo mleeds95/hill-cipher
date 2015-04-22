@@ -6,6 +6,7 @@
 // are the rows of the key matrix (comma delimited). n must be < 4
 // The -d option decrypts from stdin to stdout; -e encrypts likewise.
 // Plaintext and ciphertext must be strictly A-Z or "." or "," or " "
+// stdin is read up to whitespace so don't use spaces in your input.
 
 #include <iostream>
 #include <cstdlib>
@@ -120,7 +121,7 @@ void mapIntegersToCharacters(const int* arr, int size) {
         else if (arr[i] == 26) cout << ".";
         else if (arr[i] == 27) cout << ",";
         else if (arr[i] == 28) cout << " ";
-        else cout << "?";
+        else cout << "?"; // no mapping for given integer
     }
 }
 
