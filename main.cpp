@@ -6,7 +6,7 @@
 // are the rows of the key matrix (comma delimited). n must be < 4
 // The -d option decrypts from stdin to stdout; -e encrypts likewise.
 // Plaintext and ciphertext must be strictly A-Z or "." or "," or " "
-// stdin is read up to whitespace so don't use spaces in your input.
+// stdin is arbitrarily limited to 100 characters
 
 #include <iostream>
 #include <cstdlib>
@@ -126,21 +126,26 @@ void mapIntegersToCharacters(const int* arr, int size) {
 }
 
 // map characters from stdin to integer arrays based on predefined mappings
+// and break them into vectors of size n
 tuple<int**, int> mapCharactersToIntegers(int n) {
-    string inText;
-    cin >> inText;
+    // take in fixed size input so it can include spaces
+    char input[100] = "";
+    cin.getline(input, sizeof(input));
     // pad until it's a multiple of n
-    while (inText.length() % n != 0) {
-        inText += " ";
+    unsigned int i;
+    for (i = 0; i < sizeof(input); ++i) {
+        if (input[i] != 0) continue;
+        if ((i+1) % n == 0) break;
+        input[i] = ' ';
     }
-    int m = inText.length() / n;
+    int m = i / n;
     // allocate an array for the m substrings of length n
     int** arr = new int*[m];
     // iterate over the substrings, writing appropriate integers to arr
     for (int i = 0; i < m; ++i) {
         arr[i] = new int[n];
         for (int j = 0; j < n; ++j) {
-            char c = inText.at(i*n + j);
+            char c = input[i*n + j];
             if (c >= 'A' && c <= 'Z') arr[i][j] = ((int) c) - 65;
             else if (c == '.') arr[i][j] = 26;
             else if (c == ',') arr[i][j] = 27;
@@ -152,24 +157,21 @@ tuple<int**, int> mapCharactersToIntegers(int n) {
     return returnVal;
 }
 
+// a modulo that works for negative numbers
+int modulo(int num, int mod)
+{
+    int r = num % mod;
+    if (((mod > 0) && (r < 0)) || ((mod < 0) && (r > 0)))
+        r += mod;
+    return r;
+}
+
 // finds x such that (num * x) % mod = 1
 // Guaranteed te work with prime moduli such as 29
-// This uses the Extended Euclidean algorithm.
 int findModMultInv(int num, int mod) {
-    int b0 = mod;
-    int t, q;
-    int x0 = 0;
-    int x1 = 1;
-    if (mod == 1) return 1;
-    while (num > 1) {
-        q = num / mod;
-        t = mod;
-        mod = num % mod;
-        num = t;
-        t = x0;
-        x0 = x1 - q * x0;
-        x1 = t;
+    num = modulo(num, mod);
+    for (int x = 1; x < mod; ++x) {
+        if (modulo(num * x, mod) == 1) return x;
     }
-    if (x1 < 0) x1 += b0;
-    return x1;
+    return 0;
 }
