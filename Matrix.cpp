@@ -12,7 +12,7 @@
 #include <cmath>
 
 // This constructor allocates space for the matrix.
-// If identity is true, construct the identity matrix.
+// If identity == true, construct the identity matrix.
 Matrix::Matrix(int size, bool identity) {
     this->_size = size;
     this->_matrix = new int*[this->_size];
@@ -25,7 +25,7 @@ Matrix::Matrix(int size, bool identity) {
     }
 }
 
-// copy constructor
+// (deep) copy constructor
 Matrix::Matrix(const Matrix& other) {
     this->_size = other._size;
     this->_matrix = new int*[this->_size];
@@ -68,6 +68,28 @@ Matrix::~Matrix() {
         delete []this->_matrix[i];
     }
     delete []this->_matrix;
+}
+
+// find the determinant of this if it's 3x3 or smaller
+int Matrix::findDeterminant() {
+    int det;
+    if (this->_size == 1) {
+        det = _matrix[0][0];
+    } else if (this->_size == 2) {
+        det = _matrix[0][0] * _matrix[1][1] - _matrix[0][1] * _matrix[1][0];
+    } else if (this->_size == 3) {
+        int term1 = _matrix[0][0] * _matrix[1][1] * _matrix[2][2];
+        int term2 = _matrix[0][1] * _matrix[1][2] * _matrix[2][0];
+        int term3 = _matrix[0][2] * _matrix[1][0] * _matrix[2][1];
+        int term4 = _matrix[0][2] * _matrix[1][1] * _matrix[2][0];
+        int term5 = _matrix[0][0] * _matrix[1][2] * _matrix[2][1];
+        int term6 = _matrix[0][1] * _matrix[1][0] * _matrix[2][2];
+        det = term1 + term2 + term3 - term4 - term5 - term6;
+    } else {
+        cerr << "Warning: Matrix larger than 3x3 given. Stubbornly refusing to find determinant." << endl;
+        det = 0;
+    }
+    return det;
 }
 
 // Find the inverse of this using Gauss-Jordan elimination, and return a pointer to it.

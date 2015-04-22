@@ -3,9 +3,8 @@
 // Purpose: Implement a Hill cipher algorithm for a Linear Algebra project.
 // Usage: $ ./hillcipher -d|e <filename>
 // where the file's first line is "n=<block size>" and the following n lines
-// are the rows of the key matrix (comma delimited).
+// are the rows of the key matrix (comma delimited). n must be < 4
 // The -d option decrypts from stdin to stdout; -e encrypts likewise.
-// The key matrix is assumed to be invertible (as this is a requirement of the algorithm).
 // Plaintext and ciphertext must be strictly A-Z or "." or "," or " "
 
 #include <iostream>
@@ -51,7 +50,13 @@ int main(int argc, char* argv[]) {
     }
     Matrix* keyMatrix = new Matrix(inFile, n);
     inFile.close();
-    // At this point, keyMatrix should be initialized.
+    int det = keyMatrix->findDeterminant();
+    if (det == 0) {
+        cerr << "Error: Given key matrix not invertible!";
+        cout << *keyMatrix << endl;
+        return 4;
+    }
+    // Attempt encryption or decryption
     if (ENCRYPT) { // encrypt stdin -> stdout
         tuple<int**, int> input = mapCharactersToIntegers(n);
         // m is the number of n-length substrings the input text was broken into

@@ -12,6 +12,7 @@ class Matrix {
         Matrix(ifstream& inFile, int size);
         Matrix(const Matrix& other);
         ~Matrix();
+        int findDeterminant();
         Matrix* findGaussJordanInverse();
         int* multiplyMod29(int* arr);
         int findMaxMagnitude() const;
