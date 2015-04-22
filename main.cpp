@@ -77,8 +77,7 @@ int main(int argc, char* argv[]) {
             delete[] plaintext[i];
         delete plaintext;
     } else { // decrypt stdin -> stdout
-        //Matrix* inv = keyMatrix->findGaussJordanInverse();
-        //cout << *inv << endl;
+        Matrix* adj = keyMatrix->findAdjoint();
         //TODO
     }
     delete keyMatrix;

@@ -70,6 +70,24 @@ Matrix::~Matrix() {
     delete []this->_matrix;
 }
 
+// returns the (n-1)x(n-1) matrix without row i or column j
+Matrix* Matrix::getSubmatrix(int i, int j) {
+    Matrix* sub = new Matrix(this->_size - 1, false);
+    // Use separate variables for the submatrix so we don't go out of bounds.
+    int subRow = 0;
+    for (int thisRow = 0; thisRow < _size; ++thisRow) {
+        if (thisRow == i) continue;
+        int subCol = 0;
+        for (int thisCol = 0; thisCol < _size; ++thisCol) {
+            if (thisCol == j) continue;
+            sub->_matrix[subRow][subCol] = this->_matrix[thisRow][thisCol];
+            subCol++;
+        }
+        subRow++;
+    }
+    return sub;
+}
+
 // find the determinant of this if it's 3x3 or smaller
 int Matrix::findDeterminant() {
     int det;
@@ -86,35 +104,36 @@ int Matrix::findDeterminant() {
         int term6 = _matrix[0][1] * _matrix[1][0] * _matrix[2][2];
         det = term1 + term2 + term3 - term4 - term5 - term6;
     } else {
-        cerr << "Warning: Matrix larger than 3x3 given. Stubbornly refusing to find determinant." << endl;
-        det = 0;
+        cerr << "Warning: stubbornly refusing to find the determinant of a matrix larger than 3x3." << endl;
     }
     return det;
 }
 
-// Find the inverse of this using Gauss-Jordan elimination, and return a pointer to it.
-Matrix* Matrix::findGaussJordanInverse() {
-    Matrix* copy = this;
-    int n = this->_size;
-    Matrix* inv = new Matrix(n, true);
-    int alpha;
-    int diag;
-    for (int i = 0; i < n; ++i) {
-        diag = copy->_matrix[i][i];
-        for (int j = 0; j < n; ++j) {
-            copy->_matrix[i][j] /= diag;
-            inv->_matrix[i][j] /= diag; 
-        }
-        for (int j = 0; j < n; ++j) {
-            if (i == j) continue;
-            alpha = copy->_matrix[j][i] / copy->_matrix[i][i];
-            for (int k = 0; k < n; ++k) {
-                copy->_matrix[j][k] -= alpha * copy->_matrix[i][k];
-                inv->_matrix[j][k] -= alpha * inv->_matrix[i][k];
+// find the adjoint matrix if it's 2x2 or 3x3
+// the (i,j) entry of the adjoint is (-1)^i+j * det(sub(j,i))
+// where sub(j,i) is the submatrix without row j or column i
+Matrix* Matrix::findAdjoint() {
+    Matrix* adj = new Matrix(this->_size, false);
+    if (this->_size == 2) {
+        adj->_matrix[0][0] = this->_matrix[1][1]; 
+        adj->_matrix[0][1] = -1 * this->_matrix[0][1];
+        adj->_matrix[1][0] = -1 * this->_matrix[1][0];
+        adj->_matrix[1][1] = this->_matrix[0][0];
+    } else if (this->_size == 3) {
+        for (int i = 0; i < this->_size; ++i) {
+            for (int j = 0; j < this->_size; ++j) {
+                // find the (j,i) submatrix
+                Matrix* submatrix = this->getSubmatrix(j, i); 
+                // find the determinant of that submatrix
+                adj->_matrix[i][j] = submatrix->findDeterminant();
+                // find the cofactor by multiplying the det by -1 for odd (i+j)
+                adj->_matrix[i][j] *= ((i+j) % 2 == 0 ? 1 : -1);
             }
         }
+    } else {
+        cerr << "Warning: stubbornly refusing to find the adjoint of a matrix larger than 3x3." << endl;
     }
-    return inv;
+    return adj;
 }
 
 // Multiplies this matrix by the n by 1 matrix given, mod 29
