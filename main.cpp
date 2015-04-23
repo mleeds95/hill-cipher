@@ -129,16 +129,16 @@ void mapIntegersToCharacters(const int* arr, int size) {
 // and break them into vectors of size n
 tuple<int**, int> mapCharactersToIntegers(int n) {
     // take in fixed size input so it can include spaces
-    char input[100] = "";
+    char input[255] = "";
     cin.getline(input, sizeof(input));
     // pad until it's a multiple of n
     unsigned int i;
-    for (i = 0; i < sizeof(input); ++i) {
+    for (i = 0; i < sizeof(input) - 1; ++i) {
         if (input[i] != 0) continue;
-        if ((i+1) % n == 0) break;
+        if (i % n == 0) break;
         input[i] = ' ';
     }
-    int m = (i+1) / n;
+    int m = i / n;
     // allocate an array for the m substrings of length n
     int** arr = new int*[m];
     // iterate over the substrings, writing appropriate integers to arr
