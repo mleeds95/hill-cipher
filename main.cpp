@@ -6,7 +6,7 @@
 // are the rows of the key matrix (comma delimited). n must be < 4
 // The -d option decrypts from stdin to stdout; -e encrypts likewise.
 // Plaintext and ciphertext must be strictly A-Z or "." or "," or " "
-// stdin is arbitrarily limited to 100 characters
+// stdin is arbitrarily limited to 255 characters
 
 #include <iostream>
 #include <cstdlib>
